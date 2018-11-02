@@ -1,4 +1,4 @@
-package cmd
+package common
 
 import (
 	"encoding/hex"
@@ -10,8 +10,6 @@ import (
 	"strings"
 	"time"
 
-	yaml2json "github.com/bronze1man/go-yaml2json"
-	"github.com/eosforce/forcec/cli"
 	eosvault "github.com/eosforce/forcec/vault"
 	"github.com/eosforce/goeosforce"
 	"github.com/eosforce/goeosforce/ecc"
@@ -20,13 +18,8 @@ import (
 	"github.com/tidwall/sjson"
 )
 
-func mustGetWallet() *eosvault.Vault {
-	vault, err := setupWallet()
-	errorCheck("wallet setup", err)
-	return vault
-}
 
-func setupWallet() (*eosvault.Vault, error) {
+func SetupWallet() (*eosvault.Vault, error) {
 	walletFile := viper.GetString("global-vault-file")
 	if _, err := os.Stat(walletFile); err != nil {
 		return nil, fmt.Errorf("wallet file %q missing: %s", walletFile, err)
@@ -52,7 +45,7 @@ func setupWallet() (*eosvault.Vault, error) {
 func attachWallet(api *eos.API) {
 	walletURLs := viper.GetStringSlice("global-wallet-url")
 	if len(walletURLs) == 0 {
-		vault, err := setupWallet()
+		vault, err := SetupWallet()
 		errorCheck("setting up wallet", err)
 
 		api.SetSigner(vault.KeyBag)
@@ -67,9 +60,6 @@ func attachWallet(api *eos.API) {
 	}
 }
 
-func getAPI() *eos.API {
-	return eos.New(viper.GetString("global-api-url"))
-}
 
 func errorCheck(prefix string, err error) {
 	if err != nil {
@@ -78,17 +68,17 @@ func errorCheck(prefix string, err error) {
 	}
 }
 
-func permissionToPermissionLevel(in string) (out eos.PermissionLevel, err error) {
+func PermissionToPermissionLevel(in string) (out eos.PermissionLevel, err error) {
 	return eos.NewPermissionLevel(in)
 }
 
-func permissionsToPermissionLevels(in []string) (out []eos.PermissionLevel, err error) {
+func PermissionsToPermissionLevels(in []string) (out []eos.PermissionLevel, err error) {
 	// loop all parameters
 	for _, singleArg := range in {
 
 		// if they specified "account@active,account2", handle that too..
 		for _, val := range strings.Split(singleArg, ",") {
-			level, err := permissionToPermissionLevel(strings.TrimSpace(val))
+			level, err := PermissionToPermissionLevel(strings.TrimSpace(val))
 			if err != nil {
 				return out, err
 			}
@@ -100,18 +90,18 @@ func permissionsToPermissionLevels(in []string) (out []eos.PermissionLevel, err 
 	return
 }
 
-func pushEOSCActions(api *eos.API, actions ...*eos.Action) {
-	pushEOSCActionsAndContextFreeActions(api, nil, actions)
+func PushEOSCActions(api *eos.API, actions ...*eos.Action) {
+	PushEOSCActionsAndContextFreeActions(api, nil, actions)
 }
 
-func pushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eos.Action, actions []*eos.Action) {
+func PushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eos.Action, actions []*eos.Action) {
 	for _, act := range contextFreeActions {
 		act.Authorization = nil
 	}
 
 	permissions := viper.GetStringSlice("global-permission")
 	if len(permissions) != 0 {
-		levels, err := permissionsToPermissionLevels(permissions)
+		levels, err := PermissionsToPermissionLevels(permissions)
 		errorCheck("specified --permission(s) invalid", err)
 
 		for _, act := range actions {
@@ -122,11 +112,11 @@ func pushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eo
 	opts := &eos.TxOptions{}
 
 	if chainID := viper.GetString("global-offline-chain-id"); chainID != "" {
-		opts.ChainID = toSHA256Bytes(chainID, "--offline-chain-id")
+		opts.ChainID = ToSHA256Bytes(chainID, "--offline-chain-id")
 	}
 
 	if headBlockID := viper.GetString("global-offline-head-block"); headBlockID != "" {
-		opts.HeadBlockID = toSHA256Bytes(headBlockID, "--offline-head-block")
+		opts.HeadBlockID = ToSHA256Bytes(headBlockID, "--offline-head-block")
 	}
 
 	if delaySec := viper.GetInt("global-delay-sec"); delaySec != 0 {
@@ -147,9 +137,9 @@ func pushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eo
 
 	tx.SetExpiration(time.Duration(viper.GetInt("global-expiration")) * time.Second)
 
-	signedTx, packedTx := optionallySignTransaction(tx, opts.ChainID, api)
+	signedTx, packedTx := OptionallySignTransaction(tx, opts.ChainID, api)
 
-	optionallyPushTransaction(signedTx, packedTx, opts.ChainID, api)
+	OptionallyPushTransaction(signedTx, packedTx, opts.ChainID, api)
 }
 
 func optionallySudoWrap(tx *eos.Transaction, opts *eos.TxOptions) *eos.Transaction {
@@ -162,7 +152,7 @@ func optionallySudoWrap(tx *eos.Transaction, opts *eos.TxOptions) *eos.Transacti
 	return tx
 }
 
-func optionallySignTransaction(tx *eos.Transaction, chainID eos.SHA256Bytes, api *eos.API) (signedTx *eos.SignedTransaction, packedTx *eos.PackedTransaction) {
+func OptionallySignTransaction(tx *eos.Transaction, chainID eos.SHA256Bytes, api *eos.API) (signedTx *eos.SignedTransaction, packedTx *eos.PackedTransaction) {
 	if !viper.GetBool("global-skip-sign") {
 		textSignKeys := viper.GetStringSlice("global-offline-sign-key")
 		if len(textSignKeys) > 0 {
@@ -189,7 +179,7 @@ func optionallySignTransaction(tx *eos.Transaction, chainID eos.SHA256Bytes, api
 	return signedTx, packedTx
 }
 
-func optionallyPushTransaction(signedTx *eos.SignedTransaction, packedTx *eos.PackedTransaction, chainID eos.SHA256Bytes, api *eos.API) {
+func OptionallyPushTransaction(signedTx *eos.SignedTransaction, packedTx *eos.PackedTransaction, chainID eos.SHA256Bytes, api *eos.API) {
 	writeTrx := viper.GetString("global-write-transaction")
 
 	if writeTrx != "" {
@@ -210,11 +200,11 @@ func optionallyPushTransaction(signedTx *eos.SignedTransaction, packedTx *eos.Pa
 		}
 
 		// TODO: print the traces
-		pushTransaction(api, packedTx, chainID)
+		PushTransaction(api, packedTx, chainID)
 	}
 }
 
-func pushTransaction(api *eos.API, packedTx *eos.PackedTransaction, chainID eos.SHA256Bytes) {
+func PushTransaction(api *eos.API, packedTx *eos.PackedTransaction, chainID eos.SHA256Bytes) {
 	resp, err := api.PushTransaction(packedTx)
 	errorCheck("pushing transaction", err)
 
@@ -249,58 +239,7 @@ func blockURL(chainID eos.SHA256Bytes, blockID string) string {
 	return blockID
 }
 
-func yamlUnmarshal(cnt []byte, v interface{}) error {
-	jsonCnt, err := yaml2json.Convert(cnt)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(jsonCnt, v)
-}
-
-func loadYAMLOrJSONFile(filename string, v interface{}) error {
-	cnt, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	if strings.HasSuffix(strings.ToLower(filename), ".json") {
-		return json.Unmarshal(cnt, v)
-	}
-	return yamlUnmarshal(cnt, v)
-}
-
-func toAccount(in, field string) eos.AccountName {
-	acct, err := cli.ToAccountName(in)
-	if err != nil {
-		errorCheck(fmt.Sprintf("invalid account format for %q", field), err)
-	}
-
-	return acct
-}
-
-func toName(in, field string) eos.Name {
-	name, err := cli.ToName(in)
-	if err != nil {
-		errorCheck(fmt.Sprintf("invalid name format for %q", field), err)
-	}
-
-	return name
-}
-
-func toPermissionLevel(in, field string) eos.PermissionLevel {
-	perm, err := permissionToPermissionLevel(in)
-	if err != nil {
-		errorCheck(fmt.Sprintf("invalid permission level for %q", field), err)
-	}
-	return perm
-}
-
-func toActionName(in, field string) eos.ActionName {
-	return eos.ActionName(toName(in, field))
-}
-
-func toSHA256Bytes(in, field string) eos.SHA256Bytes {
+func ToSHA256Bytes(in, field string) eos.SHA256Bytes {
 	if len(in) != 64 {
 		errorCheck(fmt.Sprintf("%q invalid", field), errors.New("should be 64 hexadecimal characters"))
 	}
@@ -311,12 +250,3 @@ func toSHA256Bytes(in, field string) eos.SHA256Bytes {
 	return bytes
 }
 
-func isStubABI(abi eos.ABI) bool {
-	return abi.Version == "" &&
-		abi.Actions == nil &&
-		abi.ErrorMessages == nil &&
-		abi.Extensions == nil &&
-		abi.RicardianClauses == nil &&
-		abi.Structs == nil && abi.Tables == nil &&
-		abi.Types == nil
-}

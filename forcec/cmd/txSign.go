@@ -5,6 +5,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/eosforce/forcec/forcec/cmd/common"
 	"io/ioutil"
 
 	eos "github.com/eosforce/goeosforce"
@@ -40,9 +41,9 @@ var txSignCmd = &cobra.Command{
 			chainID = resp.ChainID
 		}
 
-		signedTx, packedTx := optionallySignTransaction(tx, chainID, api)
+		signedTx, packedTx := common.OptionallySignTransaction(tx, chainID, api)
 
-		optionallyPushTransaction(signedTx, packedTx, chainID, api)
+		common.OptionallyPushTransaction(signedTx, packedTx, chainID, api)
 	},
 }
 

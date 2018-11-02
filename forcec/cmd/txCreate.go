@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/eosforce/forcec/forcec/cmd/common"
 	"io"
 
 	eos "github.com/eosforce/goeosforce"
@@ -45,7 +46,7 @@ var txCreateCmd = &cobra.Command{
 			contextFreeActions = append(contextFreeActions, newNonceAction())
 		}
 
-		pushEOSCActionsAndContextFreeActions(api, contextFreeActions, actions)
+		common.PushEOSCActionsAndContextFreeActions(api, contextFreeActions, actions)
 	},
 }
 

@@ -5,6 +5,7 @@ package cmd
 import (
 	"encoding/hex"
 	"encoding/json"
+	"github.com/eosforce/forcec/forcec/cmd/common"
 	"io/ioutil"
 
 	eos "github.com/eosforce/goeosforce"
@@ -33,7 +34,7 @@ var txPushCmd = &cobra.Command{
 		packedTx, err := signedTx.Pack(eos.CompressionNone)
 		errorCheck("packing transaction", err)
 
-		pushTransaction(api, packedTx, eos.SHA256Bytes(hexChainID))
+		common.PushTransaction(api, packedTx, eos.SHA256Bytes(hexChainID))
 	},
 }
 
