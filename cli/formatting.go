@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"text/tabwriter"
 
-	eos "github.com/eoscanada/eos-go"
+	eos "github.com/eosforce/goeosforce"
 	"github.com/ryanuber/columnize"
 )
 

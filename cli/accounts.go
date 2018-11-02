@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	eos "github.com/eoscanada/eos-go"
+	eos "github.com/eosforce/goeosforce"
 )
 
 var reValidAccount = regexp.MustCompile(`[a-z12345]+`)
