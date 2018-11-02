@@ -12,7 +12,6 @@ import (
 	"github.com/eosforce/forcec/cli"
 	eosvault "github.com/eosforce/forcec/vault"
 	"github.com/eosforce/goeosforce"
-	"github.com/spf13/viper"
 )
 
 func toSHA256Bytes(in, field string) eos.SHA256Bytes {
@@ -47,7 +46,7 @@ func permissionsToPermissionLevels(in []string) (out []eos.PermissionLevel, err 
 }
 
 func getAPI() *eos.API {
-	return eos.New(viper.GetString("global-api-url"))
+	return common.GetAPI()
 }
 
 func yamlUnmarshal(cnt []byte, v interface{}) error {
