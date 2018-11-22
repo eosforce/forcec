@@ -4,7 +4,7 @@ package cmd
 
 import (
 	eos "github.com/eosforce/goeosforce"
-	"github.com/eosforce/goeosforce/token"
+	"github.com/eosforce/goeosforce/system"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -14,7 +14,6 @@ var transferCmd = &cobra.Command{
 	Short: "Transfer from tokens from an account to another",
 	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		from := toAccount(args[0], "from")
 		to := toAccount(args[1], "to")
 		quantity, err := eos.NewEOSAssetFromString(args[2])
@@ -23,7 +22,7 @@ var transferCmd = &cobra.Command{
 
 		api := getAPI()
 
-		action := token.NewTransfer(from, to, quantity, memo)
+		action := system.NewTransfer(from, to, quantity, memo)
 		pushEOSCActions(api, action)
 	},
 }
