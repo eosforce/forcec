@@ -19,7 +19,16 @@ import (
 )
 
 func GetAPI() *eos.API {
-	return eos.New(viper.GetString("global-api-url"))
+	httpHeaders := viper.GetStringSlice("global-http-header")
+	api := eos.New(viper.GetString("global-api-url"))
+	for _, header := range httpHeaders {
+		headerArray := strings.SplitN(header, ": ", 2)
+		if len(headerArray) != 2 || strings.Contains(headerArray[0], " ") {
+			errorCheck("validating http headers", fmt.Errorf("invalid HTTP Header format"))
+		}
+		api.Header.Add(headerArray[0], headerArray[1])
+	}
+	return api
 }
 
 func SetupWallet() (*eosvault.Vault, error) {
@@ -62,7 +71,6 @@ func attachWallet(api *eos.API) {
 		}
 	}
 }
-
 
 func errorCheck(prefix string, err error) {
 	if err != nil {
@@ -143,7 +151,7 @@ func PushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eo
 	fmt.Println("trx ", tx.Actions[0].Account, " ", tx.Actions[0].Data)
 
 	fee, err := GetFeeByTrx(tx)
-	if err != nil{
+	if err != nil {
 		fmt.Println("Error get fee:", err)
 		os.Exit(1)
 	}
@@ -156,10 +164,7 @@ func PushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eo
 
 func optionallySudoWrap(tx *eos.Transaction, opts *eos.TxOptions) *eos.Transaction {
 	if viper.GetBool("global-sudo-wrap") {
-		binTx, err := eos.MarshalBinary(tx)
-		errorCheck("binary-packing transaction for sudo wrapping", err)
-
-		return eos.NewTransaction([]*eos.Action{sudo.NewExec(eos.AccountName("eosio"), eos.HexBytes(binTx))}, opts)
+		return eos.NewTransaction([]*eos.Action{sudo.NewExec(eos.AccountName("eosio"), *tx)}, opts)
 	}
 	return tx
 }
@@ -261,4 +266,3 @@ func ToSHA256Bytes(in, field string) eos.SHA256Bytes {
 
 	return bytes
 }
-

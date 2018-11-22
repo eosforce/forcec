@@ -4,7 +4,7 @@ package cmd
 
 import (
 	eos "github.com/eosforce/goeosforce"
-	"github.com/eosforce/goeosforce/system"
+	"github.com/eosforce/goeosforce/token"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -23,7 +23,7 @@ var transferCmd = &cobra.Command{
 
 		api := getAPI()
 
-		action := system.NewTransfer(from, to, quantity, memo)
+		action := token.NewTransfer(from, to, quantity, memo)
 		pushEOSCActions(api, action)
 	},
 }
