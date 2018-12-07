@@ -8,7 +8,7 @@ import (
 	"github.com/eosforce/goeosforce/ecc"
 	"github.com/eosforce/goeosforce/system"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+//	"github.com/spf13/viper"
 )
 
 var systemNewAccountCmd = &cobra.Command{
@@ -57,10 +57,5 @@ func init() {
 	systemCmd.AddCommand(systemNewAccountCmd)
 
 
-	for _, flag := range []string{} {
-		if err := viper.BindPFlag("system-newaccount-cmd-"+flag, systemNewAccountCmd.Flags().Lookup(flag)); err != nil {
-			panic(err)
-		}
-	}
 
 }
