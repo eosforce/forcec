@@ -22,6 +22,9 @@ func pushEOSCActions(api *eos.API, actions ...*eos.Action) {
 	common.PushEOSCActions(api, actions...)
 }
 
+func getEOSCTransaction(api *eos.API, actions ...*eos.Action) *eos.Transaction{
+	return common.GetTransaction(api, actions...)
+}
 
 
 func errorCheck(prefix string, err error) {

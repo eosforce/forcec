@@ -3,26 +3,31 @@
 package cmd
 
 import (
-	"github.com/eosforce/goeosforce/msig"
-	"github.com/spf13/cobra"
+	"encoding/json"
+	eos "github.com/eosforce/goeosforce"
+	 "github.com/eosforce/goeosforce/msig"
+	 "github.com/spf13/cobra"
 )
 
 // msigUnapproveCmd represents the `eosio.msig::unapprove` command
 var msigUnapproveCmd = &cobra.Command{
-	Use:   "unapprove [proposer] [proposal name] [actor@permission]",
+	Use:   "unapprove [proposer] [proposal_name] [permissions]",
 	Short: "Unapprove a transaction in the eosio.msig contract",
 	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		api := getAPI()
 
-		proposer := toAccount(args[0], "proposer")
-		proposalName := toName(args[1], "proposal name")
-		requested, err := permissionToPermissionLevel(args[2])
-		errorCheck("requested permission", err)
+		proposer_name := toAccount(args[0], "proposer")
+		proposal_name := toName(args[1], "proposal name")
+
+		var trx_permissions eos.PermissionLevel
+		errReq := json.Unmarshal([]byte(args[2]), &trx_permissions)
+		errorCheck("trx_permissions", errReq)
 
 		pushEOSCActions(api,
-			msig.NewUnapprove(proposer, proposalName, requested),
+			msig.NewUnapprove(proposer_name, proposal_name, trx_permissions),
 		)
+
 	},
 }
 

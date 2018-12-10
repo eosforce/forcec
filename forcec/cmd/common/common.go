@@ -101,6 +101,41 @@ func PermissionsToPermissionLevels(in []string) (out []eos.PermissionLevel, err 
 	return
 }
 
+func GetTransaction(api *eos.API, actions ...*eos.Action) *eos.Transaction{
+	opts := &eos.TxOptions{}
+
+	if chainID := viper.GetString("global-offline-chain-id"); chainID != "" {
+		opts.ChainID = ToSHA256Bytes(chainID, "--offline-chain-id")
+	}
+
+	if headBlockID := viper.GetString("global-offline-head-block"); headBlockID != "" {
+		opts.HeadBlockID = ToSHA256Bytes(headBlockID, "--offline-head-block")
+	}
+
+	if delaySec := viper.GetInt("global-delay-sec"); delaySec != 0 {
+		opts.DelaySecs = uint32(delaySec)
+	}
+
+	if err := opts.FillFromChain(api); err != nil {
+		fmt.Println("Error fetching tapos + chain_id from the chain (specify --offline flags for offline operations):", err)
+		os.Exit(1)
+	}
+
+	tx := eos.NewTransaction(actions, opts)
+
+	tx = optionallySudoWrap(tx, opts)
+
+	tx.SetExpiration(time.Duration(viper.GetInt("global-expiration")) * time.Second)
+
+	fee, err := GetFeeByTrx(tx)
+	if err != nil {
+		fmt.Println("Error get fee:", err)
+		os.Exit(1)
+	}
+	tx.Fee = fee
+	return tx
+}
+
 func PushEOSCActions(api *eos.API, actions ...*eos.Action) {
 	PushEOSCActionsAndContextFreeActions(api, nil, actions)
 }
@@ -148,14 +183,11 @@ func PushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eo
 
 	tx.SetExpiration(time.Duration(viper.GetInt("global-expiration")) * time.Second)
 
-	fmt.Println("trx ", tx.Actions[0].Account, " ", tx.Actions[0].Data)
-
 	fee, err := GetFeeByTrx(tx)
 	if err != nil {
 		fmt.Println("Error get fee:", err)
 		os.Exit(1)
 	}
-
 	tx.Fee = fee
 	signedTx, packedTx := OptionallySignTransaction(tx, opts.ChainID, api)
 

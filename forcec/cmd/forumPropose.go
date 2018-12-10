@@ -8,7 +8,7 @@ import (
 
 	"github.com/eosforce/goeosforce"
 
-	"github.com/eosforce/goeosforce/forum"
+//	"github.com/eosforce/goeosforce/forum"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tidwall/sjson"
@@ -19,11 +19,11 @@ var forumProposeCmd = &cobra.Command{
 	Short: "Submit a proposition for votes",
 	Args:  cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
-		targetAccount := toAccount(viper.GetString("forum-cmd-target-contract"), "--target-contract")
+		// targetAccount := toAccount(viper.GetString("forum-cmd-target-contract"), "--target-contract")
 
-		proposer := toAccount(args[0], "proposer")
-		proposalName := toName(args[1], "proposal_name")
-		title := args[2]
+		// proposer := toAccount(args[0], "proposer")
+		// proposalName := toName(args[1], "proposal_name")
+		// title := args[2]
 
 		expiresAtStr := args[3]
 		var expiresAt eos.JSONTime
@@ -47,11 +47,11 @@ var forumProposeCmd = &cobra.Command{
 		proposalJSON, err = sjson.Set(proposalJSON, "type", jsonType)
 		errorCheck("setting content in json", err)
 
-		action := forum.NewPropose(proposer, proposalName, title, proposalJSON, expiresAt)
-		action.Account = targetAccount
+		//action := forum.NewPropose(proposer, proposalName, title, proposalJSON, expiresAt)
+		//action.Account = targetAccount
 
-		api := getAPI()
-		pushEOSCActions(api, action)
+		//api := getAPI()
+		//pushEOSCActions(api, action)
 	},
 }
 
