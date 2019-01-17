@@ -5,9 +5,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/eosforce/forcec/forcec/cmd/common"
 	"io/ioutil"
-	"os"
+
+	"github.com/eosforce/forcec/forcec/cmd/common"
 
 	eos "github.com/eosforce/goeosforce"
 	"github.com/spf13/cobra"
@@ -42,13 +42,6 @@ var txSignCmd = &cobra.Command{
 			chainID = resp.ChainID
 		}
 
-		fee, err := common.GetFeeByTrx(tx)
-		if err != nil{
-			fmt.Println("Error get fee:", err)
-			os.Exit(1)
-		}
-
-		tx.Fee = fee
 		signedTx, packedTx := common.OptionallySignTransaction(tx, chainID, api)
 
 		common.OptionallyPushTransaction(signedTx, packedTx, chainID, api)

@@ -148,15 +148,8 @@ func PushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eo
 
 	tx.SetExpiration(time.Duration(viper.GetInt("global-expiration")) * time.Second)
 
-	fmt.Println("trx ", tx.Actions[0].Account, " ", tx.Actions[0].Data)
+	//fmt.Println("trx ", tx.Actions[0].Account, " ", tx.Actions[0].Data)
 
-	fee, err := GetFeeByTrx(tx)
-	if err != nil {
-		fmt.Println("Error get fee:", err)
-		os.Exit(1)
-	}
-
-	tx.Fee = fee
 	signedTx, packedTx := OptionallySignTransaction(tx, opts.ChainID, api)
 
 	OptionallyPushTransaction(signedTx, packedTx, opts.ChainID, api)
