@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/eosforce/forcec/forcec/cmd/common"
-
 	eos "github.com/eosforce/goeosforce"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -42,9 +40,9 @@ var txSignCmd = &cobra.Command{
 			chainID = resp.ChainID
 		}
 
-		signedTx, packedTx := common.OptionallySignTransaction(tx, chainID, api)
+		signedTx, packedTx := optionallySignTransaction(tx, chainID, api)
 
-		common.OptionallyPushTransaction(signedTx, packedTx, chainID, api)
+		optionallyPushTransaction(signedTx, packedTx, chainID, api)
 	},
 }
 
