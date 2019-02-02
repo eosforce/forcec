@@ -7,7 +7,7 @@ import (
 	_ "github.com/eosforce/goeosforce/system"
 	_ "github.com/eosforce/goeosforce/token"
 
-	"github.com/eosforce/forcec/forcec/cmd"
+	"github.com/eosforce/forcec/eosc/cmd"
 )
 
 var version = "dev"

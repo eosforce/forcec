@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // forumCmd represents the forum command
@@ -16,11 +15,5 @@ var forumCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(forumCmd)
 
-	forumCmd.PersistentFlags().String("target-contract", "eosforumrcpp", "Target account hosting the eosio.forum code")
-
-	for _, flag := range []string{"target-contract"} {
-		if err := viper.BindPFlag("forum-cmd-"+flag, forumCmd.PersistentFlags().Lookup(flag)); err != nil {
-			panic(err)
-		}
-	}
+	forumCmd.PersistentFlags().String("target-contract", "eosio.forum", "Target account hosting the eosio.forum code")
 }

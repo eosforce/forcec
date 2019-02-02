@@ -27,8 +27,11 @@ var txIDCmd = &cobra.Command{
 
 		ptx, err := stx.Pack(eos.CompressionNone)
 		errorCheck("packing transaction", err)
-		ptx_id,_ := ptx.ID()
-		fmt.Println(hex.EncodeToString(ptx_id))
+
+		ptxID, err := ptx.ID()
+		errorCheck("transaction ID", err)
+
+		fmt.Println(hex.EncodeToString(ptxID))
 	},
 }
 
