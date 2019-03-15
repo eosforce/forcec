@@ -121,6 +121,8 @@ func pushEOSCActions(api *eos.API, actions ...*eos.Action) {
 	pushEOSCActionsAndContextFreeActions(api, nil, actions)
 }
 
+
+
 func pushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eos.Action, actions []*eos.Action) {
 	for _, act := range contextFreeActions {
 		act.Authorization = nil
@@ -162,6 +164,14 @@ func pushEOSCActionsAndContextFreeActions(api *eos.API, contextFreeActions []*eo
 
 	tx = optionallySudoWrap(tx, opts)
 
+	fee, err := GetFeeByTrx(tx)
+	if err != nil {
+		fmt.Println("Error get fee:", err)
+		os.Exit(1)
+	}
+
+	tx.Fee = fee
+	//tx.Fee = eos.NewEOSAsset(0)
 	signedTx, packedTx := optionallySignTransaction(tx, opts.ChainID, api)
 
 	optionallyPushTransaction(signedTx, packedTx, opts.ChainID, api)

@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"sort"
 	"strings"
+	//"reflect"
 
 	eos "github.com/eosforce/goeosforce"
 	"github.com/eosforce/goeosforce/msig"
@@ -111,7 +112,13 @@ add accounts listed in the owner permissions of the different accounts.
 	},
 }
 
-/*
+// type producer struct {
+// 	Bpname     eos.AccountName       `json:"bpName"`
+// 	Amount		int64             `json:"proposal_name"`
+// }
+
+type producers []map[string]interface{}
+
 func getProducersTable(api *eos.API) (prods producers, err error) {
 	lowerBound := ""
 	for {
@@ -119,7 +126,7 @@ func getProducersTable(api *eos.API) (prods producers, err error) {
 			eos.GetTableRowsRequest{
 				Scope:      "eosio",
 				Code:       "eosio",
-				Table:      "producers",
+				Table:      "schedules",
 				JSON:       true,
 				LowerBound: lowerBound,
 				Limit:      5000,
@@ -150,31 +157,21 @@ func getProducersTable(api *eos.API) (prods producers, err error) {
 	}
 	return
 }
-*/
+
 func requestProducers(api *eos.API) (out map[string]bool, err error) {
-	/*
-		producers, err := getProducersTable(api)
-		errorCheck("get producers table", err)
-
-		sort.Slice(producers, producers.Less)
-
-		out = make(map[string]bool)
-		for idx, p := range producers {
-			if len(out) > 29 {
-				break
-			}
-
-			newAcct := fmt.Sprintf("%s@active", p["owner"].(string))
-
-			if isActive, _ := p["is_active"].(float64); isActive != 1 {
-				fmt.Printf("Skipping inactive no. %d: %s\n", idx+1, newAcct)
-				continue
-			}
-
-			fmt.Printf("Adding no. %d: %s\n", idx+1, newAcct)
+	
+	producers, err := getProducersTable(api)
+	errorCheck("get producers table", err)
+	out = make(map[string]bool)
+	for _, p := range producers {
+		schedule := p["producers"]
+		for _, pp := range schedule.([]interface {}) {
+			bpinfo := pp.(map[string]interface {}) 
+			newAcct := fmt.Sprintf("%s@active", bpinfo["bpname"].(string))
+			//fmt.Printf("Adding no. %d: %s\n", idxx+1, newAcct)
 			out[newAcct] = true
 		}
-	*/
+	}
 	return
 }
 
